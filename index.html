@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jxo App Installer</title>
+  <link rel="manifest" href="manifest.json">
+  <!-- JSZip for ZIP extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 1rem; }
+    #app-list img { vertical-align: middle; margin-right: 0.5rem; }
+    button { margin: 0 0.25rem; }
+    #app-iframe { width: 100%; height: 80vh; border: none; display: none; }
+  </style>
+</head>
+<body>
+  <h1>Jxo App Installer</h1>
+
+  <div id="directory-picker-container">
+    <button id="pick-directory-btn">Select install directory</button>
+  </div>
+
+  <div id="app-list-container" style="display:none;">
+    <ul id="app-list"></ul>
+  </div>
+
+  <iframe id="app-iframe"></iframe>
+
+  <script src="script.js"></script>
+</body>
+</html>
