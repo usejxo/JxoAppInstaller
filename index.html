@@ -2,129 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jxo App Installer</title>
   <link rel="manifest" href="pwa/manifest.json">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
-  <script src="pwa/sw.js" defer></script>
   <style>
     :root {
       --primary: #4A90E2;
       --primary-dark: #357ABD;
       --bg: #f5f7fa;
-      --card-bg: #ffffff;
+      --card-bg: #fff;
       --text: #333;
       --error: #c0392b;
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      margin: 0; font-family: sans-serif;
+      background: var(--bg); color: var(--text);
+      display: flex; flex-direction: column; min-height: 100vh;
     }
     header {
-      background: var(--primary);
-      color: white;
-      padding: 1rem;
-      text-align: center;
+      background: var(--primary); color: #fff;
+      padding: 1rem; text-align: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    main {
-      flex: 1;
-      max-width: 900px;
-      margin: 1rem auto;
-      padding: 0 1rem;
-    }
+    main { flex:1; max-width:900px; margin:1rem auto; padding:0 1rem; }
     #error-container {
       background: rgba(192,57,43,0.1);
       color: var(--error);
-      padding: 0.75rem 1rem;
-      border-left: 4px solid var(--error);
-      margin-bottom: 1rem;
-      display: none;
+      padding:0.75rem 1rem;
+      border-left:4px solid var(--error);
+      margin-bottom:1rem;
+      display:none;
     }
     .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.2s;
+      background: var(--primary); color:#fff;
+      border:none; padding:0.6rem 1.2rem;
+      border-radius:4px; cursor:pointer;
+      font-size:1rem; transition:background 0.2s;
     }
-    .btn:hover {
-      background: var(--primary-dark);
+    .btn:hover { background: var(--primary-dark); }
+    #pwa-prompt {
+      background:#fff; border:1px solid #ddd;
+      padding:1rem; border-radius:6px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.1);
+      text-align:center; margin-bottom:1rem;
     }
-    #directory-picker-container {
-      text-align: center;
-      margin: 2rem 0;
-    }
-    #app-list-container {
-      margin-top: 1rem;
-    }
-    #app-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
-      list-style: none;
-      padding: 0;
+    #app-list { display:grid; gap:1rem; list-style:none; padding:0;
+      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
     }
     #app-list li {
-      background: var(--card-bg);
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: var(--card-bg); border-radius:8px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.1);
+      padding:1rem; display:flex; flex-direction:column;
+      align-items:center;
     }
-    #app-list img {
-      width: 64px;
-      height: 64px;
-      object-fit: contain;
-      margin-bottom: 0.5rem;
-    }
-    .app-name {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      text-align: center;
-    }
-    .buttons {
-      margin-top: auto;
-      width: 100%;
-      display: flex;
-      justify-content: space-around;
-    }
+    #app-list img { width:64px; height:64px; margin-bottom:0.5rem; }
+    .app-name { font-weight:bold; margin-bottom:0.5rem; text-align:center; }
+    .buttons { margin-top:auto; width:100%; display:flex; justify-content:space-around; }
     #app-iframe {
-      width: 100%;
-      height: 70vh;
-      border: none;
-      display: none;
-      margin-top: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      width:100%; height:70vh; border:none; display:none;
+      margin-top:1rem; border-radius:8px;
+      box-shadow:0 1px 3px rgba(0,0,0,0.1);
     }
-    @media (max-width: 600px) {
-      #app-list {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media(max-width:600px){ #app-list { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Jxo App Installer</h1>
-  </header>
-
+  <header><h1>Jxo App Installer</h1></header>
   <main>
     <div id="error-container" role="alert" aria-live="assertive"></div>
 
-    <div id="directory-picker-container">
+    <!-- PWA Install Prompt -->
+    <div id="pwa-prompt" style="display:none;">
+      <p>To continue, please install the Jxo App Installer PWA.</p>
+      <button id="pwa-install-btn" class="btn">Install PWA</button>
+    </div>
+
+    <div id="directory-picker-container" style="text-align:center;">
       <button id="pick-directory-btn" class="btn">Select install directory</button>
     </div>
 
@@ -135,6 +89,7 @@
     <iframe id="app-iframe"></iframe>
   </main>
 
+  <!-- load after DOM -->
   <script src="scripts/script.js" defer></script>
 </body>
 </html>

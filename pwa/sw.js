@@ -1,5 +1,5 @@
 const CACHE_NAME = 'jxo-installer-cache-v1';
-const URLS_TO_CACHE = ['.', 'index.html', 'script.js', 'apps.json', 'manifest.json'];
+const URLS_TO_CACHE = ['.', 'index.html', 'scripts/script.js', 'apps/apps.json', 'pwa/manifest.json'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
