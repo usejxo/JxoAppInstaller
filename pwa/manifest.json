@@ -1,7 +1,7 @@
 {
     "name": "Jxo App Installer",
     "short_name": "JxoInstaller",
-    "start_url": ".",
+    "start_url": "index.html",
     "display": "standalone",
     "background_color": "#ffffff",
     "icons": [
