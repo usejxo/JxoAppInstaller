@@ -1,0 +1,17 @@
+[
+    {
+      "id": "sampleApp",
+      "name": "Sample App",
+      "image": "https://usejxo.github.io/JxoAppInstaller/apps/sampleApp/image.png",
+      "icon": "https://usejxo.github.io/JxoAppInstaller/apps/sampleApp/icon.png",
+      "zip_url": "https://usejxo.github.io/JxoAppInstaller/downloads/sampleApp.zip"
+    },
+    {
+      "id": "demoApp",
+      "name": "Demo Application",
+      "image": "https://usejxo.github.io/JxoAppInstaller/apps/demoApp/image.png",
+      "icon": "https://usejxo.github.io/JxoAppInstaller/apps/demoApp/icon.png",
+      "zip_url": "https://usejxo.github.io/JxoAppInstaller/downloads/demoApp.zip"
+    }
+  ]
+  

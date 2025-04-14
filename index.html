@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jxo App Installer</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="pwa/manifest.json">
   <!-- JSZip for ZIP extraction -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+  <script src="pwa/sw.js"></script>
   <style>
     body { font-family: sans-serif; margin: 1rem; }
     #app-list img { vertical-align: middle; margin-right: 0.5rem; }
@@ -27,6 +28,6 @@
 
   <iframe id="app-iframe"></iframe>
 
-  <script src="script.js"></script>
+  <script src="scripts/script.js"></script>
 </body>
 </html>
