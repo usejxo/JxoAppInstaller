@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jxo App Installer</title>
   <link rel="manifest" href="pwa/manifest.json">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     :root {
       --primary: #4A90E2;
@@ -17,64 +16,124 @@
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0; font-family: sans-serif;
-      background: var(--bg); color: var(--text);
-      display: flex; flex-direction: column; min-height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     header {
-      background: var(--primary); color: #fff;
-      padding: 1rem; text-align: center;
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    main { flex:1; max-width:900px; margin:1rem auto; padding:0 1rem; }
+    main {
+      flex: 1;
+      max-width: 900px;
+      margin: 1rem auto;
+      padding: 0 1rem;
+    }
     #error-container {
       background: rgba(192,57,43,0.1);
       color: var(--error);
-      padding:0.75rem 1rem;
-      border-left:4px solid var(--error);
-      margin-bottom:1rem;
-      display:none;
+      padding: 0.75rem 1rem;
+      border-left: 4px solid var(--error);
+      margin-bottom: 1rem;
+      display: none;
     }
     .btn {
-      background: var(--primary); color:#fff;
-      border:none; padding:0.6rem 1.2rem;
-      border-radius:4px; cursor:pointer;
-      font-size:1rem; transition:background 0.2s;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
     }
-    .btn:hover { background: var(--primary-dark); }
+    .btn:hover {
+      background: var(--primary-dark);
+    }
     #pwa-prompt {
-      background:#fff; border:1px solid #ddd;
-      padding:1rem; border-radius:6px;
-      box-shadow:0 1px 3px rgba(0,0,0,0.1);
-      text-align:center; margin-bottom:1rem;
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 1rem;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      text-align: center;
+      margin-bottom: 1rem;
+      display: none;
     }
-    #app-list { display:grid; gap:1rem; list-style:none; padding:0;
-      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    #app-list {
+      display: grid;
+      gap: 1rem;
+      list-style: none;
+      padding: 0;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
     #app-list li {
-      background: var(--card-bg); border-radius:8px;
-      box-shadow:0 1px 3px rgba(0,0,0,0.1);
-      padding:1rem; display:flex; flex-direction:column;
-      align-items:center;
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    #app-list img { width:64px; height:64px; margin-bottom:0.5rem; }
-    .app-name { font-weight:bold; margin-bottom:0.5rem; text-align:center; }
-    .buttons { margin-top:auto; width:100%; display:flex; justify-content:space-around; }
+    #app-list img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      margin-bottom: 0.5rem;
+    }
+    .app-name {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .buttons {
+      margin-top: auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+    }
     #app-iframe {
-      width:100%; height:70vh; border:none; display:none;
-      margin-top:1rem; border-radius:8px;
-      box-shadow:0 1px 3px rgba(0,0,0,0.1);
+      width: 100%;
+      height: 70vh;
+      border: none;
+      display: none;
+      margin-top: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    @media(max-width:600px){ #app-list { grid-template-columns:1fr; } }
+    @media (max-width: 600px) {
+      #app-list {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
+
+  <!-- Load JSZip before our script -->
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"
+    integrity="sha512-0O/huGmOJE0vG/4fSgTR/0LZ05DmXG9I4zlGxIUW0EzOyb/VcRj5LPYHAD2j+9tXxjH89NlO1WbrHPb3rEeN0g=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
 </head>
 <body>
-  <header><h1>Jxo App Installer</h1></header>
+  <header>
+    <h1>Jxo App Installer</h1>
+  </header>
+
   <main>
     <div id="error-container" role="alert" aria-live="assertive"></div>
 
-    <!-- PWA Install Prompt -->
-    <div id="pwa-prompt" style="display:none;">
+    <div id="pwa-prompt">
       <p>To continue, please install the Jxo App Installer PWA.</p>
       <button id="pwa-install-btn" class="btn">Install PWA</button>
     </div>
@@ -90,7 +149,251 @@
     <iframe id="app-iframe"></iframe>
   </main>
 
-  <!-- load after DOM -->
-  <script src="scripts/script.js" defer></script>
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('pwa/sw.js')
+          .catch(err => console.error('SW registration failed:', err));
+      });
+    }
+
+    const APPS_JSON_URL = 'https://usejxo.github.io/JxoAppInstaller/apps/apps.json';
+    const params       = new URLSearchParams(location.search);
+    const devMode      = params.get('pwa') === 'false';
+    let deferredPrompt = null;
+    let appInstallerDirHandle = null;
+    let installedApps  = [];
+
+    // UI helpers
+    function showError(msg) {
+      const e = document.getElementById('error-container');
+      e.textContent = msg;
+      e.style.display = 'block';
+    }
+    function clearError() {
+      const e = document.getElementById('error-container');
+      e.textContent = '';
+      e.style.display = 'none';
+    }
+
+    // IndexedDB for storing directory handle
+    async function openDB() {
+      return new Promise((res, rej) => {
+        const r = indexedDB.open('jxo-installer-db', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore('handles');
+        r.onsuccess = () => res(r.result);
+        r.onerror   = () => rej(r.error);
+      });
+    }
+    async function saveDirectoryHandle(handle) {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('handles','readwrite');
+        const store = tx.objectStore('handles');
+        const r = store.put(handle, 'appInstaller');
+        r.onsuccess = () => res();
+        r.onerror   = () => rej(r.error);
+      });
+    }
+    async function getSavedDirectoryHandle() {
+      const db = await openDB();
+      return new Promise((res, rej) => {
+        const tx = db.transaction('handles','readonly');
+        const store = tx.objectStore('handles');
+        const r = store.get('appInstaller');
+        r.onsuccess = () => res(r.result || null);
+        r.onerror   = () => rej(r.error);
+      });
+    }
+
+    // PWA install prompt flow
+    window.addEventListener('beforeinstallprompt', e => {
+      if (devMode) return;
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('pwa-prompt').style.display = 'block';
+    });
+    document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        document.getElementById('pwa-prompt').style.display = 'none';
+        init();
+      } else {
+        showError('PWA install is required to continue.');
+      }
+    });
+    window.addEventListener('appinstalled', () => {
+      document.getElementById('pwa-prompt').style.display = 'none';
+      init();
+    });
+
+    // Main initialization
+    async function init() {
+      clearError();
+      installedApps = JSON.parse(localStorage.getItem('installedApps') || '[]');
+      appInstallerDirHandle = await getSavedDirectoryHandle();
+
+      if (appInstallerDirHandle) {
+        document.getElementById('directory-picker-container').style.display = 'none';
+        document.getElementById('app-list-container').style.display = 'block';
+        await renderAppList();
+      } else {
+        document.getElementById('pick-directory-btn')
+          .addEventListener('click', pickDirectory);
+      }
+    }
+
+    // Directory picker
+    async function pickDirectory() {
+      clearError();
+      try {
+        const root = await window.showDirectoryPicker();
+        const perm = await root.requestPermission({mode:'readwrite'});
+        if (perm !== 'granted') throw new Error('Write permission denied');
+        appInstallerDirHandle = await root.getDirectoryHandle('AppInstaller', {create:true});
+        await saveDirectoryHandle(appInstallerDirHandle);
+        document.getElementById('directory-picker-container').style.display = 'none';
+        document.getElementById('app-list-container').style.display = 'block';
+        await renderAppList();
+      } catch (e) {
+        showError(e.message);
+      }
+    }
+
+    // Fetch & render the app list
+    async function renderAppList() {
+      clearError();
+      const ul = document.getElementById('app-list');
+      ul.innerHTML = '';
+      let apps;
+      try {
+        const res = await fetch(APPS_JSON_URL);
+        if (!res.ok) throw new Error(`Failed to fetch apps.json (${res.status})`);
+        apps = await res.json();
+      } catch (e) {
+        return showError(e.message);
+      }
+
+      for (const app of apps) {
+        const installed = installedApps.find(a=>a.id===app.id);
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <img src="${app.icon}" alt="${app.name}">
+          <div class="app-name">${app.name}</div>
+          <div class="buttons">
+            ${installed
+              ? `<button data-action="open" data-id="${app.id}" class="btn">Open</button>
+                 <button data-action="uninstall" data-id="${app.id}" class="btn">Uninstall</button>`
+              : `<button data-action="install" data-id="${app.id}" class="btn">Install</button>`
+            }
+          </div>`;
+        ul.appendChild(li);
+      }
+
+      ul.onclick = async e => {
+        if (e.target.tagName !== 'BUTTON') return;
+        clearError();
+        const { action, id } = e.target.dataset;
+        const app = apps.find(a=>a.id===id);
+        try {
+          if (action==='install')   await installApp(app);
+          if (action==='open')      await openApp(app);
+          if (action==='uninstall') await uninstallApp(app);
+          await renderAppList();
+        } catch (err) {
+          showError(err.message);
+        }
+      };
+    }
+
+    // Install: download, unzip, extract, update state
+    async function installApp(app) {
+      const r = await fetch(app.zip_url);
+      if (!r.ok) throw new Error(`Download failed (${r.status})`);
+      const blob = await r.blob();
+      const zip  = await JSZip.loadAsync(blob);
+
+      // find root folder containing index.html
+      let rootPath = '';
+      zip.forEach((path,file) => {
+        if (!file.dir && path.endsWith('index.html')) {
+          rootPath = path.slice(0, path.lastIndexOf('/'));
+        }
+      });
+      // allow top-level index.html
+      if (rootPath === undefined) rootPath = '';
+
+      // extract files
+      await extractZipToDir(zip, rootPath, appInstallerDirHandle);
+
+      // save state
+      installedApps.push({ id: app.id, rootPath });
+      localStorage.setItem('installedApps', JSON.stringify(installedApps));
+    }
+
+    // Safe extraction that filters out empty names
+    async function extractZipToDir(zip, rootPath, dirHandle) {
+      const entries = [];
+      zip.forEach((fullPath, file) => {
+        if (file.dir) return;
+        if (rootPath === '' || fullPath.startsWith(rootPath + '/')) {
+          entries.push({ fullPath, file });
+        }
+      });
+
+      for (const { fullPath, file } of entries) {
+        const relPath = rootPath
+          ? fullPath.slice(rootPath.length + 1)
+          : fullPath;
+        const parts = relPath.split('/').filter(Boolean);
+        if (parts.length === 0) continue;
+        const fileName = parts.pop();
+
+        let currentDir = dirHandle;
+        for (const segment of parts) {
+          currentDir = await currentDir.getDirectoryHandle(segment, { create: true });
+        }
+
+        const fh = await currentDir.getFileHandle(fileName, { create: true });
+        const writable = await fh.createWritable();
+        await writable.write(await file.async('uint8array'));
+        await writable.close();
+      }
+    }
+
+    // Open in iframe
+    async function openApp(app) {
+      const dir = await appInstallerDirHandle.getDirectoryHandle(app.rootPath);
+      const fh  = await dir.getFileHandle('index.html');
+      const file = await fh.getFile();
+      const url  = URL.createObjectURL(file);
+      const iframe = document.getElementById('app-iframe');
+      iframe.src = url;
+      iframe.style.display = 'block';
+    }
+
+    // Uninstall
+    async function uninstallApp(app) {
+      await appInstallerDirHandle.removeEntry(app.rootPath, { recursive: true });
+      installedApps = installedApps.filter(a => a.id !== app.id);
+      localStorage.setItem('installedApps', JSON.stringify(installedApps));
+    }
+
+    // Start
+    if (devMode) {
+      init();
+    } else {
+      if (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true
+      ) {
+        init();
+      }
+      // otherwise wait for PWA prompt/appinstalled
+    }
+  </script>
 </body>
 </html>
