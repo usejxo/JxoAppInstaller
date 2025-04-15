@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jxo App Installer</title>
   <link rel="manifest" href="pwa/manifest.json">
   <style>
@@ -101,15 +101,6 @@
       display: flex;
       justify-content: space-around;
     }
-    #app-iframe {
-      width: 100%;
-      height: 70vh;
-      border: none;
-      display: none;
-      margin-top: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
     @media (max-width: 600px) {
       #app-list {
         grid-template-columns: 1fr;
@@ -117,7 +108,7 @@
     }
   </style>
 
-  <!-- Load JSZip 3.10.1 before our script -->
+  <!-- JSZip 3.10.1 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
@@ -140,12 +131,10 @@
     <div id="app-list-container" style="display:none;">
       <ul id="app-list"></ul>
     </div>
-
-    <iframe id="app-iframe"></iframe>
   </main>
 
   <script>
-    // Register SW
+    // --- Service Worker ---
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('pwa/sw.js')
@@ -153,6 +142,7 @@
       });
     }
 
+    // --- Config & State ---
     const APPS_JSON_URL = 'https://usejxo.github.io/JxoAppInstaller/apps/apps.json';
     const params       = new URLSearchParams(location.search);
     const devMode      = params.get('pwa') === 'false';
@@ -160,6 +150,7 @@
     let appInstallerDirHandle = null;
     let installedApps = [];
 
+    // --- UI Helpers ---
     function showError(msg) {
       const e = document.getElementById('error-container');
       e.textContent = msg;
@@ -171,6 +162,7 @@
       e.style.display = 'none';
     }
 
+    // --- IndexedDB for DirectoryHandle ---
     async function openDB() {
       return new Promise((res, rej) => {
         const r = indexedDB.open('jxo-installer-db', 1);
@@ -200,7 +192,7 @@
       });
     }
 
-    // PWA prompt
+    // --- PWA Install Prompt ---
     window.addEventListener('beforeinstallprompt', e => {
       if (devMode) return;
       e.preventDefault();
@@ -215,7 +207,7 @@
         document.getElementById('pwa-prompt').style.display = 'none';
         init();
       } else {
-        showError('PWA install is required.');
+        showError('PWA install is required to continue.');
       }
     });
     window.addEventListener('appinstalled', () => {
@@ -223,12 +215,14 @@
       init();
     });
 
-    // Kickoff
+    // --- App Initialization ---
     if (devMode) {
       init();
     } else {
-      if (window.matchMedia('(display-mode: standalone)').matches ||
-          window.navigator.standalone === true) {
+      if (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true
+      ) {
         init();
       }
     }
@@ -248,13 +242,14 @@
       }
     }
 
+    // --- Directory Picker ---
     async function pickDirectory() {
       clearError();
       try {
         const root = await window.showDirectoryPicker();
-        const perm = await root.requestPermission({mode:'readwrite'});
+        const perm = await root.requestPermission({ mode: 'readwrite' });
         if (perm !== 'granted') throw new Error('Write permission denied');
-        appInstallerDirHandle = await root.getDirectoryHandle('AppInstaller', {create:true});
+        appInstallerDirHandle = await root.getDirectoryHandle('AppInstaller', { create: true });
         await saveDirectoryHandle(appInstallerDirHandle);
         document.getElementById('directory-picker-container').style.display = 'none';
         document.getElementById('app-list-container').style.display = 'block';
@@ -264,6 +259,7 @@
       }
     }
 
+    // --- Render App List ---
     async function renderAppList() {
       clearError();
       const ul = document.getElementById('app-list');
@@ -297,11 +293,11 @@
         if (e.target.tagName !== 'BUTTON') return;
         clearError();
         const { action, id } = e.target.dataset;
-        const app = apps.find(a=>a.id===id);
+        const app = apps.find(a => a.id === id);
         try {
-          if (action==='install')   await installApp(app);
-          if (action==='open')      await openApp(app);
-          if (action==='uninstall') await uninstallApp(app);
+          if (action === 'install')   await installApp(app);
+          if (action === 'open')      await openApp(app);
+          if (action === 'uninstall') await uninstallApp(app);
           await renderAppList();
         } catch (err) {
           showError(err.message);
@@ -309,35 +305,34 @@
       };
     }
 
+    // --- Install App ---
     async function installApp(app) {
       const r = await fetch(app.zip_url);
       if (!r.ok) throw new Error(`Download failed (${r.status})`);
       const blob = await r.blob();
       const zip  = await JSZip.loadAsync(blob);
 
-      // find the zip's rootPath
+      // find rootPath
       let rootPath = '';
-      zip.forEach((path,file) => {
+      zip.forEach((path, file) => {
         if (!file.dir && path.endsWith('index.html')) {
           rootPath = path.slice(0, path.lastIndexOf('/'));
         }
       });
       if (rootPath === undefined) rootPath = '';
 
-      // make the per-app folder
+      // create per‑app folder
       const appDir = await appInstallerDirHandle.getDirectoryHandle(app.id, { create: true });
-
-      // extract into that folder
       await extractZipToDir(zip, rootPath, appDir);
 
-      // record install
       installedApps.push(app.id);
       localStorage.setItem('installedApps', JSON.stringify(installedApps));
     }
 
+    // --- Extract ZIP ---
     async function extractZipToDir(zip, rootPath, dirHandle) {
       const entries = [];
-      zip.forEach((fullPath,file) => {
+      zip.forEach((fullPath, file) => {
         if (file.dir) return;
         if (rootPath === '' || fullPath.startsWith(rootPath + '/')) {
           entries.push({ fullPath, file });
@@ -350,6 +345,7 @@
         const parts = rel.split('/').filter(Boolean);
         if (!parts.length) continue;
         const fileName = parts.pop();
+
         let cur = dirHandle;
         for (const seg of parts) {
           cur = await cur.getDirectoryHandle(seg, { create: true });
@@ -361,22 +357,21 @@
       }
     }
 
+    // --- Open in New Window ---
     async function openApp(app) {
       const dir = await appInstallerDirHandle.getDirectoryHandle(app.id);
       const fh  = await dir.getFileHandle('index.html');
       const file = await fh.getFile();
       const url  = URL.createObjectURL(file);
-      const iframe = document.getElementById('app-iframe');
-      iframe.src = url;
-      iframe.style.display = 'block';
+      window.open(url, '_blank');
     }
 
+    // --- Uninstall App ---
     async function uninstallApp(app) {
-      // remove the entire app folder
       await appInstallerDirHandle.removeEntry(app.id, { recursive: true });
       installedApps = installedApps.filter(id => id !== app.id);
       localStorage.setItem('installedApps', JSON.stringify(installedApps));
     }
   </script>
-</body>
+  <script> src="https://usejxo.github.io/JxoAppInstaller/pwa/sw.js" </script>
 </html>
