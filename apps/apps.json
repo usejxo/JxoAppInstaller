@@ -11,7 +11,7 @@
       "name": "Demo Application",
       "image": "https://usejxo.github.io/JxoAppInstaller/apps/demoApp/image.png",
       "icon": "https://usejxo.github.io/JxoAppInstaller/apps/demoApp/icon.png",
-      "zip_url": "https://usejxo.github.io/JxoAppInstaller/downloads/demoApp.zip"
+      "zip_url": "https://github.com/usejxo/JxoAppInstaller/releases/download/Beta-Testing-Zip/Jlauncher-main.zip"
     }
   ]
   
